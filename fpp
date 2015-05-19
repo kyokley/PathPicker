@@ -20,7 +20,7 @@ while [ -h "$SOURCE" ]; do
 done
 BASEDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-PYTHONCMD="python"
+PYTHONCMD="`which python2.7`"
 
 function doProgram {
   # process input from pipe and store as pickled file
