@@ -29,7 +29,10 @@ class CursesAPI(object):
         curses.noecho()
 
     def initPair(self, pairNumber, fg, bg):
-        return curses.init_pair(pairNumber, fg, bg)
+        try:
+            return curses.init_pair(pairNumber, fg, bg)
+        except: 
+            pass
 
     def colorPair(self, colorNumber):
         return curses.color_pair(colorNumber)
