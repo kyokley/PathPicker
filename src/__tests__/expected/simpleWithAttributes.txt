@@ -1,5 +1,5 @@
  README.md                      |  8 ++++-
- BBBBBBBBB                                                                      
+ *********                                                                      
  fpp                            |  6 ++--
                                                                                 
  src/__tests__/__init__.py      |  0
@@ -56,5 +56,5 @@
                                                                                 
 ________________________________________________________________________________
                                                                                 
-[f|A] selection, [down|j|up|k|space|b] navigation, [enter] open, [c] command mod
+[f|A] selection, [down|j|up|k|space|b] navigation, [enter] open, [x] quick selec
                                                                                 

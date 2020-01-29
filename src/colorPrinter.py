@@ -1,10 +1,7 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
-#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from __future__ import print_function
 
 import output
@@ -16,6 +13,7 @@ class ColorPrinter(object):
     attribute state"""
 
     DEFAULT_COLOR_INDEX = 1
+    CURRENT_COLORS = -1
 
     def __init__(self, screen, cursesAPI):
         self.colors = {}
@@ -28,6 +26,10 @@ class ColorPrinter(object):
         self.currentAttributes = False  # initialized in setAttributes
 
     def setAttributes(self, foreColor, backColor, other):
+        self.currentAttributes = self.getAttributes(foreColor, backColor,
+                                                    other)
+
+    def getAttributes(self, foreColor, backColor, other):
         colorIndex = -1
         colorPair = (foreColor, backColor)
         if not colorPair in self.colors:
@@ -43,15 +45,24 @@ class ColorPrinter(object):
 
         attr = attr | other
 
-        self.currentAttributes = attr
-
-        self.screen.attrset(self.currentAttributes)
-
-    def restoreAttributes(self):
-        self.screen.attrset(self.currentAttributes)
+        return attr
 
     def addstr(self, y, x, text, attr=None):
         if attr is None:
             attr = self.cursesAPI.colorPair(self.DEFAULT_COLOR_INDEX)
+        elif attr == self.CURRENT_COLORS:
+            attr = self.currentAttributes
 
         self.screen.addstr(y, x, text, attr)
+
+    def clearSquare(self, topY, bottomY, leftX, rightX):
+        # clear out square from top to bottom
+        for i in range(topY, bottomY):
+            self.clearSegment(i, leftX, rightX)
+
+    # perhaps there's a more elegant way to do this
+    def clearSegment(self, y, startX, endX):
+        spaceStr = ' ' * (endX - startX)
+        attr = self.cursesAPI.colorPair(self.DEFAULT_COLOR_INDEX)
+
+        self.screen.addstr(y, startX, spaceStr, attr)

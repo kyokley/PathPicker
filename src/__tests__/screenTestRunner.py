@@ -1,10 +1,7 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
-#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from __future__ import print_function
 
 import curses
@@ -13,23 +10,24 @@ import os
 
 sys.path.insert(0, '../')
 
-import choose
-import processInput
-from screenFlags import ScreenFlags
-
-from screenForTest import ScreenForTest
+from keyBindingsForTest import KeyBindingsForTest
 from cursesForTest import CursesForTest
+from screenForTest import ScreenForTest
+from screenFlags import ScreenFlags
+import processInput
+import choose
 
 INPUT_DIR = './inputs/'
 
 
-def getLineObjsFromFile(inputFile, validateFileExists):
+def getLineObjsFromFile(inputFile, validateFileExists, allInput):
     inputFile = os.path.join(INPUT_DIR, inputFile)
     file = open(inputFile)
     lines = file.read().split('\n')
     file.close()
     return processInput.getLineObjsFromLines(lines,
-                                             validateFileExists=validateFileExists)
+                                             validateFileExists=validateFileExists,
+                                             allInput=allInput)
 
 
 def getRowsFromScreenRun(
@@ -38,11 +36,14 @@ def getRowsFromScreenRun(
         screenConfig={},
         printScreen=True,
         pastScreen=None,
+        pastScreens=None,
         validateFileExists=False,
+        allInput=False,
         args=[]):
 
     lineObjs = getLineObjsFromFile(inputFile,
-                                   validateFileExists=validateFileExists)
+                                   validateFileExists=validateFileExists,
+                                   allInput=allInput)
     screen = ScreenForTest(
         charInputs,
         maxX=screenConfig.get('maxX', 80),
@@ -54,7 +55,8 @@ def getRowsFromScreenRun(
     # we run our program and throw a StopIteration exception
     # instead of sys.exit-ing
     try:
-        choose.doProgram(screen, flags, CursesForTest(), lineObjs)
+        choose.doProgram(screen, flags, KeyBindingsForTest(),
+                         CursesForTest(), lineObjs)
     except StopIteration:
         pass
 
@@ -63,10 +65,7 @@ def getRowsFromScreenRun(
 
     if pastScreen:
         return screen.getRowsWithAttributesForPastScreen(pastScreen)
-    return screen.getRowsWithAttributes()
+    elif pastScreens:
+        return screen.getRowsWithAttributesForPastScreens(pastScreens)
 
-if __name__ == '__main__':
-    getRowsFromScreenRun(
-        inputFile='gitDiff.txt',
-        charInputs=['q'],
-    )
+    return screen.getRowsWithAttributes()

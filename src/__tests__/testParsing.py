@@ -1,10 +1,7 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
-#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from __future__ import print_function
 
 import sys
@@ -12,9 +9,10 @@ import unittest
 import os
 sys.path.insert(0, '../')
 
-import format
-from formattedText import FormattedText
 import parse
+from localTestCases import LOCAL_TEST_CASES
+from formattedText import FormattedText
+import format
 
 fileTestCases = [{
     'input': 'html/js/hotness.js',
@@ -60,7 +58,7 @@ fileTestCases = [{
 
     # For now, don't worry about matching the following case perfectly,
     # simply because it's complicated.
-    #}, {
+    # }, {
     #    'input': '~/.ssh/known_hosts',
     #    'match': True,
 
@@ -120,6 +118,12 @@ fileTestCases = [{
     'num': 27,
     'file': 'fbcode/search/places/scorer/PageScorer.cpp'
 }, {
+    'input':
+    '(fbcode/search/places/scorer/PageScorer.cpp:27:46):#include "search/places/scorer/linear_scores/MinutiaeVerbScorer.h',
+    'match': True,
+    'num': 27,
+    'file': 'fbcode/search/places/scorer/PageScorer.cpp'
+}, {
     # Pretty intense case
     'input':
     'fbcode/search/places/scorer/TARGETS:590:28:    srcs = ["linear_scores/MinutiaeVerbScorer.cpp"]',
@@ -154,6 +158,14 @@ fileTestCases = [{
     'match': True,
     'file': 'So.many.periods.txt'
 }, {
+    'input': 'So.many.periods.txt~',
+    'match': True,
+    'file': 'So.many.periods.txt~'
+}, {
+    'input': '#So.many.periods.txt#',
+    'match': True,
+    'file': '#So.many.periods.txt#'
+}, {
     'input': 'SO.MANY.PERIODS.TXT',
     'match': True,
     'file': 'SO.MANY.PERIODS.TXT'
@@ -161,7 +173,7 @@ fileTestCases = [{
     'input': 'blarg blah So.MANY.PERIODS.TXT:22',
     'match': True,
     'file': 'So.MANY.PERIODS.TXT',
-    'num': 0  # we ignore the number here
+    'num': 22
 }, {
     'input': 'SO.MANY&&PERIODSTXT',
     'match': False
@@ -209,7 +221,135 @@ fileTestCases = [{
     'match': True,
     'num': 42,
     'file': './inputs/annoying Spaces Folder/evilFile With Space2.txt',
+}, {
+    # files with + in them, silly objective c
+    'input': 'M     ./objectivec/NSArray+Utils.h',
+    'match': True,
+    'file': './objectivec/NSArray+Utils.h',
+}, {
+    'input': 'NSArray+Utils.h',
+    'match': True,
+    'file': 'NSArray+Utils.h',
+}, {
+    # And with filesystem validation just in case
+    # the + breaks something
+    'input': './inputs/NSArray+Utils.h:42',
+    'validateFileExists': True,
+    'match': True,
+    'num': 42,
+    'file': './inputs/NSArray+Utils.h',
+}, {
+    # and our hyphen extension file
+    'input': './inputs/blogredesign.sublime-workspace:42',
+    'validateFileExists': True,
+    'match': True,
+    'num': 42,
+    'file': './inputs/blogredesign.sublime-workspace',
+}, {
+    # and our hyphen extension file with no dir
+    'input': 'inputs/blogredesign.sublime-workspace:42',
+    'validateFileExists': True,
+    'match': True,
+    'num': 42,
+    'file': 'inputs/blogredesign.sublime-workspace',
+}, {
+    # and our hyphen extension file with no dir or number
+    'input': 'inputs/blogredesign.sublime-workspace',
+    'validateFileExists': True,
+    'match': True,
+    'file': 'inputs/blogredesign.sublime-workspace',
+}, {
+    # and a huge combo of stuff
+    'input': './inputs/annoying-hyphen-dir/Package Control.system-bundle',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/annoying-hyphen-dir/Package Control.system-bundle',
+}, {
+    # and a huge combo of stuff with no prepend
+    'input': 'inputs/annoying-hyphen-dir/Package Control.system-bundle',
+    'validateFileExists': True,
+    'match': True,
+    'disableFuzzTest': True,
+    'file': 'inputs/annoying-hyphen-dir/Package Control.system-bundle',
+}, {
+    # and a huge combo of stuff with line
+    'input': './inputs/annoying-hyphen-dir/Package Control.system-bundle:42',
+    'validateFileExists': True,
+    'match': True,
+    'num': 42,
+    'file': './inputs/annoying-hyphen-dir/Package Control.system-bundle',
+}, {
+    'input': './inputs/svo (install the zip, not me).xml',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/svo (install the zip, not me).xml',
+}, {
+    'input': './inputs/svo (install the zip not me).xml',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/svo (install the zip not me).xml',
+}, {
+    'input': './inputs/svo install the zip, not me.xml',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/svo install the zip, not me.xml',
+}, {
+    'input': './inputs/svo install the zip not me.xml',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/svo install the zip not me.xml',
+}, {
+    'input': './inputs/annoyingTildeExtension.txt~:42',
+    'validateFileExists': True,
+    'match': True,
+    'num': 42,
+    'file': './inputs/annoyingTildeExtension.txt~',
+}, {
+    'input': 'inputs/.DS_KINDA_STORE',
+    'validateFileExists': True,
+    'match': True,
+    'file': 'inputs/.DS_KINDA_STORE',
+}, {
+    'input': './inputs/.DS_KINDA_STORE',
+    'validateFileExists': True,
+    'match': True,
+    'file': './inputs/.DS_KINDA_STORE',
+}, {
+    'input': 'evilFile No Prepend.txt',
+    'validateFileExists': True,
+    'match': True,
+    'disableFuzzTest': True,
+    'file': 'evilFile No Prepend.txt',
+}, {
+    'input': 'file-from-yocto_%.bbappend',
+    'validateFileExists': True,
+    'match': True,
+    'file': 'file-from-yocto_%.bbappend',
+}, {
+    'input': 'otehr thing ./foo/file-from-yocto_3.1%.bbappend',
+    'validateFileExists': True,
+    'match': True,
+    'file': 'file-from-yocto_3.1%.bbappend',
+}, {
+    'input': './file-from-yocto_3.1%.bbappend',
+    'validateFileExists': True,
+    'match': True,
+    'file': './file-from-yocto_3.1%.bbappend',
+}, {
+    'input': 'Gemfile',
+    'validateFileExists': False,
+    'match': True,
+    'disableFuzzTest': True,
+    'file': 'Gemfile',
+}, {
+    'input': 'Gemfilenope',
+    'validateFileExists': False,
+    'match': False,
+    'disableFuzzTest': True,
 }]
+
+# local test cases get added as well
+fileTestCases += LOCAL_TEST_CASES
 
 prependDirTestCases = [
     {
@@ -217,10 +357,10 @@ prependDirTestCases = [
         'out': '/home/absolute/path.py'
     }, {
         'in': '~/www/asd.py',
-        'out': '~/www/asd.py'
+        'out': os.path.expanduser('~/www/asd.py'),
     }, {
         'in': 'www/asd.py',
-        'out': '~/www/asd.py'
+        'out': os.path.expanduser('~/www/asd.py'),
     }, {
         'in': 'foo/bar/baz/asd.py',
         'out': parse.PREPEND_PATH + 'foo/bar/baz/asd.py'
@@ -233,6 +373,42 @@ prependDirTestCases = [
     }, {
         'in': '',
         'out': ''
+    }]
+
+allInputTestCases = [
+    {
+        'input': '    ',
+        'match': None
+    }, {
+        'input': ' ',
+        'match': None
+    }, {
+        'input': 'a',
+        'match': 'a'
+    }, {
+        'input': '   a',
+        'match': 'a'
+    }, {
+        'input': 'a    ',
+        'match': 'a'
+    }, {
+        'input': '    foo bar',
+        'match': 'foo bar'
+    }, {
+        'input': 'foo bar    ',
+        'match': 'foo bar'
+    }, {
+        'input': '    foo bar    ',
+        'match': 'foo bar'
+    }, {
+        'input': 'foo bar baz',
+        'match': 'foo bar baz'
+    }, {
+        'input': '	modified:   Classes/Media/YPMediaLibraryViewController.m',
+        'match': 'modified:   Classes/Media/YPMediaLibraryViewController.m'
+    }, {
+        'input': 'no changes added to commit (use "git add" and/or "git commit -a")',
+        'match': 'no changes added to commit (use "git add" and/or "git commit -a")'
     }]
 
 
@@ -257,6 +433,8 @@ class TestParseFunction(unittest.TestCase):
                   ':0:7: var AdsErrorCodeStore', ' jkk asdad']
 
         for testCase in fileTestCases:
+            if testCase.get('disableFuzzTest'):
+                continue
             for before in befores:
                 for after in afters:
                     testInput = '%s%s%s' % (before, testCase['input'], after)
@@ -292,9 +470,26 @@ class TestParseFunction(unittest.TestCase):
             self.checkFileResult(testCase)
         print('Tested %d cases.' % len(fileTestCases))
 
+    def testAllInputMatches(self):
+        for testCase in allInputTestCases:
+            result = parse.matchLine(testCase['input'], False, True)
+
+            if not result:
+                self.assertTrue(testCase['match'] is None,
+                                'Expected a match "%s" where one did not occur.' %
+                                testCase['match'])
+                continue
+
+            (match, _, _) = result
+            self.assertEqual(match, testCase['match'], 'Line "%s" did not match.' %
+                             testCase['input'])
+
+        print('Tested %d cases for all-input matching.' %
+              len(allInputTestCases))
+
     def checkFileResult(self, testCase):
-        result = parse.matchLine(testCase['input'], \
-            validateFileExists=testCase.get('validateFileExists', False))
+        result = parse.matchLine(testCase['input'],
+                                 validateFileExists=testCase.get('validateFileExists', False))
         if not result:
             self.assertFalse(testCase['match'],
                              'Line "%s" did not match any regex' %

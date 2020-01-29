@@ -1,13 +1,12 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 #
 import re
 import curses
 from collections import namedtuple
+from colorPrinter import ColorPrinter
 
 
 class FormattedText(object):
@@ -76,10 +75,13 @@ class FormattedText(object):
         occur, the attribute set is changed and not restored"""
         printedSoFar = 0
         for index, val in enumerate(self.segments):
+            if printedSoFar >= maxLen:
+                break
             if index % 2 == 1:
                 # text
                 toPrint = val[0:maxLen - printedSoFar]
-                printer.screen.addstr(y, x + printedSoFar, toPrint)
+                printer.addstr(y, x + printedSoFar, toPrint,
+                               ColorPrinter.CURRENT_COLORS)
                 printedSoFar += len(toPrint)
             else:
                 # formatting
@@ -104,14 +106,14 @@ class FormattedText(object):
         """Break the formatted text at the point given and return
         a new tuple of two FormattedText representing the before and
         after"""
-        #FORMAT, TEXT, FORMAT, TEXT, FORMAT, TEXT
-        #--before----, segF,   seg,  ----after--
+        # FORMAT, TEXT, FORMAT, TEXT, FORMAT, TEXT
+        # --before----, segF,   seg,  ----after--
         #
         # to
         #
-        #FORMAT, TEXT, FORMAT, TEXTBEFORE, FORMAT, TEXTAFTER, FORMAT, TEXT
-        #--before----, segF,   [before],   segF,   [after],   -----after--
-        #----index---------------/
+        # FORMAT, TEXT, FORMAT, TEXTBEFORE, FORMAT, TEXTAFTER, FORMAT, TEXT
+        # --before----, segF,   [before],   segF,   [after],   -----after--
+        # ----index---------------/
         (index, splitPoint) = self.findSegmentPlace(where)
         textSegment = self.segments[index]
         beforeText = textSegment[:splitPoint]

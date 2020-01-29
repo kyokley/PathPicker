@@ -1,5 +1,5 @@
 src/charCodeMapping.py         | 20 +++++++++++++
-BBBBBBBBBBBBBBBBBBBBBB                                                          
+**********************                                                          
 src/choose.py                  | 15 ++++++++--
 _____________                                                                   
 src/colorPrinter.py            | 21 ++++++++-----
@@ -56,5 +56,5 @@ ___________________
                                                                                 
 ________________________________________________________________________________
                                                                                 
-[f|A] selection, [down|j|up|k|space|b] navigation, [enter] open, [c] command mod
+[f|A] selection, [down|j|up|k|space|b] navigation, [enter] open, [x] quick selec
                                                                                 

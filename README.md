@@ -28,14 +28,15 @@ a wide variety of input -- try it with all the options below:
 and anything else you can dream up!
 
 ## Requirements
-PathPicker should work with most Bash environments and requires Python >2.6
-and <3.0.
+PathPicker requires Python >2.6 or >3.0.
 
-ZSH is supported as well but won't have a few features like alias expansion
-in command line mode.
+### Supported Shells:
+
+* Bash is fully supported and works the best.
+* ZSH is supported as well but won't have a few features like alias expansion in command line mode.
+* csh/fish/rc are supported in the latest version, but might have quirks or issues in older versions of PathPicker. Note however if your default shell and current shell is not in the same family (bash/zsh... v.s. fish/rc), you need to manually export environment variable `$SHELL` to your current shell.
 
 ## Installing PathPicker
-
 
 ### Homebrew
 
@@ -46,9 +47,20 @@ Installing PathPicker is easiest with [Homebrew for mac](http://brew.sh/):
 
 ### Linux
 
-You can easily install PathPicker from the GitHub master branch
-via [the AUR fpp-git package](https://aur.archlinux.org/packages/fpp-git/).
-For non-Arch users, see the manual installation instructions below:
+On debian-based systems, run these steps:
+
+```
+$ git clone https://github.com/facebook/PathPicker.git
+$ cd PathPicker/debian
+$ ./package.sh 
+$ ls ../fpp_0.7.2_noarch.deb
+```
+
+On Arch Linux, PathPicker can be installed from Arch User Repository (AUR).
+[the AUR fpp-git package](https://aur.archlinux.org/packages/fpp-git/).
+
+If you are on another system, or prefer manual installation, please
+follow the instructions given below.
 
 ### Manual Installation
 
@@ -57,7 +69,7 @@ PathPicker since it's essentially just a bash script that calls some Python. The
 steps more-or-less outline the process:
 
 * `cd /usr/local/ # or wherever you install apps`
-* `git clone git@github.com:facebook/PathPicker.git`
+* `git clone https://github.com/facebook/PathPicker.git`
 * `cd PathPicker/`
 
 Here we make a symbolic link from the bash script in the repo
@@ -69,7 +81,7 @@ to `/usr/local/bin/` which is assumed to be in the current
 
 ### Add-ons
 
-For tmux users, you can additionally install `tmux-fpp` which adds a key combination to run PathPicker on the last received `stdout`. It makes jumping into file selection mode even easier -- [check it out here](https://github.com/jbnicolai/tmux-fpp).
+For tmux users, you can additionally install `tmux-fpp` which adds a key combination to run PathPicker on the last received `stdout`. It makes jumping into file selection mode even easier -- [check it out here](https://github.com/tmux-plugins/tmux-fpp).
 
 
 ## Advanced Functionality
@@ -83,16 +95,24 @@ in the middle of your command, you can use the `$F` token instead, like:
 
 `cat $F | wc -l`
 
+Another important note is that PathPicker by default only selects files that exist on the filesystem. If you
+want to skip this (perhaps to selected deleted files in `git status`), just run PathPicker with the `--no-file-checks` (or `-nfc` for short) flag.
+
 ## How PathPicker works
 PathPicker is a combination of a bash script and some small Python modules.
 It essentially has three steps:
 
-* First in the bash script, it redirects all standardout in to a python module that
-parses and extracts out the filenames. This data is saved in a temporary file
-and the python script exits.
-* Next, the bash script switches to terminal input mode and
-another python module reads out the saved entries and presents them in a
-selector UI built with `curses`. The user either selects a few files to edit or inputs a command
+* Firstly, the bash script redirects all standard out in to a python module that
+parses and extracts out filename candidates. These candidates are extracted with a series of
+regular expressions since the input to PathPicker can be any stdout from another program. Rather
+than make specialized parsers for each program, we treat everything as noisy input and select candidates via
+regexes. To limit the number of calls to the filesystem (to check existence), we are fairly restrictive on the
+candidates we extract.
+
+This has the downside that files that are single words with no extension (like `test`) that are not prepended by
+a directory will fail to match. This is a known limitation to PathPicker and means that it will sometimes fail to find valid files in the input.
+
+* Next, a selector UI built with `curses` is presented to the user. Here you can select a few files to edit or input a command
 to execute.
 * Lastly, the python script outputs a command to a bash file that is later
 executed by the original bash script.
@@ -107,4 +127,4 @@ For all documentation and configuration options, see the output of `fpp --help`.
 See the CONTRIBUTING file for how to help out.
 
 ## License
-PathPicker is BSD-licensed. We also provide an additional patent grant.
+PathPicker is MIT licensed.

@@ -1,23 +1,20 @@
-# Copyright (c) 2015-present, Facebook, Inc.
-# All rights reserved.
+# Copyright (c) Facebook, Inc. and its affiliates.
 #
-# This source code is licensed under the BSD-style license found in the
-# LICENSE file in the root directory of this source tree. An additional grant
-# of patent rights can be found in the PATENTS file in the same directory.
-#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 from __future__ import print_function
 
 import curses
 import pickle
 import sys
 import os
-import argparse
 
 import output
 import screenControl
 import logger
 import format
 import stateFiles
+from keyBindings import KeyBindings
 from cursesAPI import CursesAPI
 from screenFlags import ScreenFlags
 
@@ -30,16 +27,19 @@ this error will go away)
 '''
 
 
-def doProgram(stdscr, flags, cursesAPI=None, lineObjs=None):
+def doProgram(stdscr, flags, keyBindings=None, cursesAPI=None, lineObjs=None):
     # curses and lineObjs get dependency injected for
     # our tests, so init these if they are not provided
+    if not keyBindings:
+        keyBindings = KeyBindings()
     if not cursesAPI:
         cursesAPI = CursesAPI()
     if not lineObjs:
         lineObjs = getLineObjs()
     output.clearFile()
     logger.clearFile()
-    screen = screenControl.Controller(flags, stdscr, lineObjs, cursesAPI)
+    screen = screenControl.Controller(
+        flags, keyBindings, stdscr, lineObjs, cursesAPI)
     screen.control()
 
 
@@ -49,6 +49,7 @@ def getLineObjs():
         lineObjs = pickle.load(open(filePath, 'rb'))
     except:
         output.appendError(LOAD_SELECTION_WARNING)
+        output.appendExit()
         sys.exit(1)
     logger.addEvent('total_num_files', len(lineObjs))
 
@@ -59,7 +60,8 @@ def getLineObjs():
     matches = [lineObj for lineObj in lineObjs.values()
                if not lineObj.isSimple()]
     if not len(matches):
-        output.writeToFile('echo "No lines matched!!"')
+        output.writeToFile('echo "No lines matched!!";')
+        output.appendExit()
         sys.exit(0)
     return lineObjs
 
@@ -69,6 +71,7 @@ def setSelectionsFromPickle(selectionPath, lineObjs):
         selectedIndices = pickle.load(open(selectionPath, 'rb'))
     except:
         output.appendError(LOAD_SELECTION_WARNING)
+        output.appendExit()
         sys.exit(1)
     for index in selectedIndices:
         if index >= len(lineObjs.items()):
@@ -87,7 +90,8 @@ if __name__ == '__main__':
     filePath = stateFiles.getPickleFilePath()
     if not os.path.exists(filePath):
         print('Nothing to do!')
-        output.writeToFile('echo ":D"')
+        output.writeToFile('echo ":D";')
+        output.appendExit()
         sys.exit(0)
     output.clearFile()
     # we initialize our args *before* we move into curses
